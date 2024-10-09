@@ -3,9 +3,9 @@ from tkinter import ttk
 
 # Przykładowe dane - on wymaga po 50 rzecz przym i czasownikow 
 pronouns = ["I", "you", "he", "she", "it", "we", "they"]
-nouns = ["apple", "pear", "banana", "gruszka"]
-adjectives = ["green", "red", "yellow"]
-verbs = ["run", "eat", "drink", "speak", "write"]
+nouns = ["water", "food", "mother", "father", "house", "car", "dog", "cat", "money", "area", "family", "word", "brother", "sister", "bed", "kitchen", "restaurant", "bird", "tree", "flower", "animal", "mobile phone", "sun", "moon", "sea", "river", "weather", "eyes", "ears", "hair", "shoes", "bag", "train", "bus", "knife", "fork", "spoon", "breakfast", "dinner", "bread", "fruit", "vegetables", "meat", "drink", "town", "village", "toilet", "weekend", "doctor", "policeman"]
+adjectives = ["good", "big", "small", "bad", "red", "blue", "happy", "beautiful", "open", "green", "closed", "new", "old", "clean", "strong", "young", "expensive", "early", "fast", "dark", "delicious", "soft", "dirty", "empty", "far", "sad", "free", "full", "funny", "hard", "heavy", "hungry", "interesting", "kind", "late", "yellow", "light", "quiet", "ready", "slow", "smart", "tall", "thirsty", "ugly", "weak", "bright", "short", "serious", "stupid", "honest"]
+verbs = ["Be", "Have", "Do", "Say", "Go", "Get", "Make", "Know", "Think", "Take", "See", "Come", "Want", "Look", "Use", "Find", "Give", "Tell", "Work", "Call", "Try", "Ask", "Need", "Feel", "Become", "Leave", "Put", "Mean", "Keep", "Let", "Begin", "Seem", "Help", "Talk", "Turn", "Start", "Show", "Hear", "Play", "Run", "Move", "Like", "Live", "Believe", "Hold", "Bring", "Happen", "Write", "Provide", "Sit"]
 moods = ["Indicative", "Subjunctive", "Imperative"]
 tenses = ["Present", "Past", "Future"]
 class LanguageApp:
