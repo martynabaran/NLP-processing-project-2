@@ -59,9 +59,16 @@ class LanguageApp:
     def display_noun_selection(self):
         label = tk.Label(self.master, text="Select a noun:")
         label.pack(pady=10)
-
+        
+        
         self.noun_selection = ttk.Combobox(self.master, values=nouns)
         self.noun_selection.pack(pady=10)
+        
+        label_number = tk.Label(self.master, text="Choose number (singular or plural):")
+        label_number.pack(pady=10)
+
+        self.number_selection = ttk.Combobox(self.master, values=["Singular", "Plural"])
+        self.number_selection.pack(pady=10)
 
         # Opcja dodania przymiotnika
         self.adjective_check = tk.Checkbutton(self.master, text="Add an adjective", command=self.toggle_adjective)
@@ -89,19 +96,30 @@ class LanguageApp:
             self.select_button.pack_forget()  
             self.select_button.pack(pady=(10, 20)) 
 
-        else:  # Jeśli odznaczone
-            # Usuń przymiotnik, jeśli był dodany
+        else:  
             if hasattr(self, 'adjective_selection'):
                 self.adjective_selection.destroy()
 
-            # Przesuń przycisk 'Select' z powrotem na oryginalną pozycję
-            self.select_button.pack_forget()  # Usuń przycisk z obecnej pozycji
-            self.select_button.pack(pady=10)  # Dodaj go z powrotem na oryginalną pozycję
+            
+            self.select_button.pack_forget()  
+            self.select_button.pack(pady=10)  
 
             
     def confirm_noun(self):
         selected_noun = self.noun_selection.get()
+        selected_number = self.number_selection.get()
+
     
+        noun_number = "singular" if selected_number == "Singular" else "plural"
+        self.user_selection['noun_number'] = noun_number
+
+        # TODO 
+        # Ogarnąc to lepiej - może ten model językowy w ogóle może to robic jak sie mu powie ze sie chce rzeczownik w lb mnogiej 
+        if selected_number == "Plural":
+            selected_noun = selected_noun + "s" 
+        
+        self.user_selection['subject' if 'subject' not in self.user_selection else 'complement'] = selected_noun
+
         self.user_selection['subject' if 'subject' not in self.user_selection else 'complement'] = selected_noun
         if hasattr(self, 'adjective_selection'):
             selected_adjective = self.adjective_selection.get()
@@ -278,3 +296,4 @@ if __name__ == "__main__":
     root = tk.Tk()
     app = LanguageApp(root)
     root.mainloop()
+
