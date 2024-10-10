@@ -1,26 +1,27 @@
 import tkinter as tk
 from tkinter import ttk
+from mlconjug3 import Conjugator
+from textblob import Word
+
 
 # Przykładowe dane - on wymaga po 50 rzecz przym i czasownikow 
 pronouns = ["I", "you", "he", "she", "it", "we", "they"]
 nouns = ["water", "food", "mother", "father", "house", "car", "dog", "cat", "money", "area", "family", "word", "brother", "sister", "bed", "kitchen", "restaurant", "bird", "tree", "flower", "animal", "mobile phone", "sun", "moon", "sea", "river", "weather", "eyes", "ears", "hair", "shoes", "bag", "train", "bus", "knife", "fork", "spoon", "breakfast", "dinner", "bread", "fruit", "vegetables", "meat", "drink", "town", "village", "toilet", "weekend", "doctor", "policeman"]
 adjectives = ["good", "big", "small", "bad", "red", "blue", "happy", "beautiful", "open", "green", "closed", "new", "old", "clean", "strong", "young", "expensive", "early", "fast", "dark", "delicious", "soft", "dirty", "empty", "far", "sad", "free", "full", "funny", "hard", "heavy", "hungry", "interesting", "kind", "late", "yellow", "light", "quiet", "ready", "slow", "smart", "tall", "thirsty", "ugly", "weak", "bright", "short", "serious", "stupid", "honest"]
 verbs = ["Be", "Have", "Do", "Say", "Go", "Get", "Make", "Know", "Think", "Take", "See", "Come", "Want", "Look", "Use", "Find", "Give", "Tell", "Work", "Call", "Try", "Ask", "Need", "Feel", "Become", "Leave", "Put", "Mean", "Keep", "Let", "Begin", "Seem", "Help", "Talk", "Turn", "Start", "Show", "Hear", "Play", "Run", "Move", "Like", "Live", "Believe", "Hold", "Bring", "Happen", "Write", "Provide", "Sit"]
-moods = ["Indicative", "Subjunctive", "Imperative"]
+moods = ["Indicative", "Imperative"]
 tenses = ["Present", "Past", "Future"]
 class LanguageApp:
     def __init__(self, master):
         self.master = master
         self.master.title("Language Learning App")
-        self.is_complement = False  
+        self.is_complement = False
         self.user_selection = {}
-
-       
+        self.conjugator = Conjugator(language="en")
         self.start_selection()
 
     def start_selection(self):
         self.clear_window()
-
         label = tk.Label(self.master, text="Choose a subject type:")
         label.pack(pady=10)
 
@@ -29,15 +30,13 @@ class LanguageApp:
         self.subject_type.bind("<<ComboboxSelected>>", self.subject_selected)
 
     def subject_selected(self, event):
-        
-    
 
-        if self.subject_type.get() == "Pronoun":          
+        if self.subject_type.get() == "Pronoun":
             self.display_pronoun_selection()
         elif self.subject_type.get() == "Noun":
-       
             self.display_noun_selection()
-  
+
+
 
     def display_pronoun_selection(self):
         label = tk.Label(self.master, text="Select a pronoun:")
@@ -52,18 +51,19 @@ class LanguageApp:
     def confirm_pronoun(self):
         selected_pronoun = self.pronoun_selection.get()
         self.user_selection['subject'] = selected_pronoun
+        self.user_selection['subject_type'] = 'pronoun'
         print("Selected subject:", selected_pronoun)
-        self.display_verb_selection()  
+        self.display_verb_selection()
+
 
 
     def display_noun_selection(self):
         label = tk.Label(self.master, text="Select a noun:")
         label.pack(pady=10)
-        
-        
+
         self.noun_selection = ttk.Combobox(self.master, values=nouns)
         self.noun_selection.pack(pady=10)
-        
+
         label_number = tk.Label(self.master, text="Choose number (singular or plural):")
         label_number.pack(pady=10)
 
@@ -75,51 +75,47 @@ class LanguageApp:
         self.adjective_check.var = tk.BooleanVar()
         self.adjective_check["variable"] = self.adjective_check.var
         self.adjective_check.pack(pady=10)
-
-
         self.select_button = tk.Button(self.master, text="Select", command=self.confirm_noun)
         self.select_button.pack(pady=10)
 
-    def toggle_adjective(self):
-       
-        if hasattr(self, 'adjective_selection'):
-            self.adjective_selection.destroy() 
 
-        if self.adjective_check.var.get():  
+    def toggle_adjective(self):
+
+        if hasattr(self, 'adjective_selection'):
+            self.adjective_selection.destroy()
+
+        if self.adjective_check.var.get():
             label = tk.Label(self.master, text="Select an adjective:")
             label.pack(pady=10)
 
             self.adjective_selection = ttk.Combobox(self.master, values=adjectives)
             self.adjective_selection.pack(pady=10)
+            self.select_button.pack_forget()
+            self.select_button.pack(pady=(10, 20))
 
-          
-            self.select_button.pack_forget()  
-            self.select_button.pack(pady=(10, 20)) 
-
-        else:  
+        else:
             if hasattr(self, 'adjective_selection'):
                 self.adjective_selection.destroy()
 
-            
-            self.select_button.pack_forget()  
-            self.select_button.pack(pady=10)  
+            self.select_button.pack_forget()
+            self.select_button.pack(pady=10)
 
-            
+
+
     def confirm_noun(self):
         selected_noun = self.noun_selection.get()
         selected_number = self.number_selection.get()
 
-    
+
         noun_number = "singular" if selected_number == "Singular" else "plural"
         self.user_selection['noun_number'] = noun_number
 
-        # TODO 
-        # Ogarnąc to lepiej - może ten model językowy w ogóle może to robic jak sie mu powie ze sie chce rzeczownik w lb mnogiej 
         if selected_number == "Plural":
-            selected_noun = selected_noun + "s" 
-        
-        self.user_selection['subject' if 'subject' not in self.user_selection else 'complement'] = selected_noun
 
+            blob = Word(selected_noun)
+            selected_noun = blob.pluralize()
+
+        self.user_selection['subject_type'] = 'noun'
         self.user_selection['subject' if 'subject' not in self.user_selection else 'complement'] = selected_noun
         if hasattr(self, 'adjective_selection'):
             selected_adjective = self.adjective_selection.get()
@@ -129,38 +125,36 @@ class LanguageApp:
                 else:
                     self.user_selection['complement'] = f"{selected_adjective} {selected_noun}"
 
-   
         print("Selected subject/complement:", self.user_selection['subject'] if not self.is_complement else self.user_selection['complement'])
 
-        # Jeśli to pierwszy wybór rzeczownika, przechodzimy do czasownika 
+        # Jeśli to pierwszy wybór rzeczownika, przechodzimy do czasownika
         if not self.is_complement:
             self.display_verb_selection()
         else:
-            self.final_sentence() 
-
+            self.final_sentence()
 
     def ask_for_pronoun(self):
+
         self.clear_window()
-        
         label = tk.Label(self.master, text="Would you like to add a pronoun (e.g., possessive or demonstrative)?")
         label.pack(pady=10)
 
         self.pronoun_choice = ttk.Combobox(self.master, values=["None", "Possessive", "Demonstrative"])
         self.pronoun_choice.pack(pady=10)
-        
+
         button = tk.Button(self.master, text="Next", command=self.display_pronoun_options)
         button.pack(pady=10)
 
     def display_pronoun_options(self):
         pronoun_type = self.pronoun_choice.get()
- 
+
         if not pronoun_type:
-            return  
+            return
 
         self.clear_window()
-        
+
         if pronoun_type == "Possessive":
-            pronouns = ["my", "your", "his", "her", "its", "our", "their"]  
+            pronouns = ["my", "your", "his", "her", "its", "our", "their"]
         elif pronoun_type == "Demonstrative":
             pronouns = ["this", "that", "these", "those"]
         else:
@@ -180,70 +174,75 @@ class LanguageApp:
         selected_pronoun = self.additional_pronoun.get()
         if selected_pronoun:
             self.user_selection['subject'] = f"{selected_pronoun} {self.user_selection['subject']}"
-        
+
         print("Final subject with pronoun:", self.user_selection['subject'])
         self.display_verb_selection()
 
-    
-    
-
-    def display_verb_selection(self):
+    def display_verb_selection(self, go=False):
         self.clear_window()
 
-        # Wyświetlenie listy czasowników
+        # Display verb selection
         label = tk.Label(self.master, text="Select a verb:")
         label.pack(pady=10)
 
         self.verb_selection = ttk.Combobox(self.master, values=verbs)
         self.verb_selection.pack(pady=10)
 
-        # Wybór trybu
+        # Display mood selection
         mood_label = tk.Label(self.master, text="Select mood:")
         mood_label.pack(pady=10)
 
         self.mood_selection = ttk.Combobox(self.master, values=moods)
         self.mood_selection.pack(pady=10)
+        self.mood_selection.bind("<<ComboboxSelected>>", self.mood_selected)
 
-        # Wybór czasu
-        tense_label = tk.Label(self.master, text="Select tense:")
-        tense_label.pack(pady=10)
-
+        # Display tense selection (initially hidden)
+        self.tense_label = tk.Label(self.master, text="Select tense:")
         self.tense_selection = ttk.Combobox(self.master, values=tenses)
-        self.tense_selection.pack(pady=10)
 
-        # Przycisk do zatwierdzenia wyboru czasownika, trybu i czasu
-        button = tk.Button(self.master, text="Select", command=self.confirm_verb_selection)
-        button.pack(pady=10)
+        # Confirm selection button
+        self.confirm_button = tk.Button(self.master, text="Select", command=self.confirm_verb_selection)
+
+    def mood_selected(self, event):
+        selected_mood = self.mood_selection.get()
+        if selected_mood == "Imperative":
+            self.tense_label.pack_forget()
+            self.tense_selection.pack_forget()
+            self.tense_message = tk.Label(self.master, text="Imperative is in English always the same, regardless of the subject\n"
+                                                            "So we are not going to show the subject here.")
+            self.tense_message.pack(pady=10)
+            self.confirm_button.pack(pady=10)
+        else:
+            if hasattr(self, 'tense_message'):
+                self.tense_message.pack_forget()
+            self.tense_label.pack(pady=10)
+            self.tense_selection.pack(pady=10)
+            self.confirm_button.pack(pady=10)
 
     def confirm_verb_selection(self):
-        
+
         selected_verb = self.verb_selection.get()
         selected_mood = self.mood_selection.get()
         selected_tense = self.tense_selection.get()
 
-        
+
         self.user_selection['verb'] = {
             'verb': selected_verb,
-            'mood': selected_mood,
+            'mood': selected_mood.lower(),
             'tense': selected_tense
         }
 
         print("Selected verb:", self.user_selection['verb'])
-
-       
         self.ask_for_complement()
-
-
 
 
     def ask_for_complement(self):
         self.clear_window()
 
-     
         label = tk.Label(self.master, text="Do you want to add a complement?")
         label.pack(pady=10)
 
-        
+
         yes_button = tk.Button(self.master, text="Yes", command=self.add_complement)
         yes_button.pack(side=tk.LEFT, padx=10)
 
@@ -251,35 +250,59 @@ class LanguageApp:
         no_button.pack(side=tk.RIGHT, padx=10)
 
     def add_complement(self):
-        self.is_complement = True  
+
+        self.is_complement = True
         self.clear_window()
-        self.display_noun_selection()  
+        self.display_noun_selection()
 
 
-    # TODO 
-    # logika która zbierając wybrane słowa stworzy poprawne zdanie dla danego języka 
+
+
+
+    # TODO
+    # logika która zbierając wybrane słowa stworzy poprawne zdanie dla danego języka
     # czyli odmieni rzeczowniki, czasowniki, da dobre czasy itd
     def final_sentence(self):
         self.clear_window()
-
+        final_sentence =""
         # Wyświetlenie ostatecznego zdania
         subject = self.user_selection.get('subject', '')
+        subject_procedence = self.user_selection.get('subject_type', '')
         verb = self.user_selection.get('verb', {}).get('verb', '')
-        mood = self.user_selection.get('verb', {}).get('mood', '')
-        tense = self.user_selection.get('verb', {}).get('tense', '')
+        mood = self.user_selection.get('verb', {}).get('mood', '').lower()
+        tense = self.user_selection.get('verb', {}).get('tense', '').lower()
         complement = self.user_selection.get('complement', '')
+        number = self.user_selection.get('noun_number', '')
 
-        # Budowanie ostatecznego zdania
-        final_sentence = f"{subject} {verb}"
-        if complement:
-            final_sentence += f" {complement}"
+        # Verb conjugation
+        if mood=='indicative':
+            if (subject_procedence == 'noun' and number == 'singular') or (subject_procedence == 'pronoun' and any(pronoun in subject for pronoun in ['he', 'she', 'it'])):
+                subject_key = 'he/she/it'
+            else:
+                subject_key = 'they'
+            tense = 'past tense' if tense == 'past' else tense
+            if tense!= 'future':
+                mood_tense_key = f"{mood} {tense}"
+                verb = self.conjugator.conjugate(verb)
+                verb_conjugated = verb[mood][mood_tense_key][subject_key]
+            else:
+                verb_conjugated = f"will {verb.lower()}"
 
+            # Building the final sentence
+            final_sentence = f"{subject.capitalize()} {verb_conjugated}"
+            if complement:
+                final_sentence += f" {complement}"
+        else:
+            final_sentence = f"{verb.capitalize()}"
+            if complement:
+                final_sentence += f" {complement}"
+
+        # Displaying the final sentence
         label = tk.Label(self.master, text=f"Final sentence: {final_sentence}")
         label.pack(pady=10)
 
+        # Printing the final sentence to the console for debugging purposes
         print("Final sentence:", final_sentence)
-
-
 
     def next_step(self):
         self.clear_window()
