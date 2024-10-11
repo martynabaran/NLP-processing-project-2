@@ -180,7 +180,13 @@ class LanguageApp:
 
     def display_verb_selection(self, go=False):
         self.clear_window()
-
+        if go:
+            label = tk.Label(self.master, text="Select a verb:")
+            label.pack(pady=10)
+            verbs.remove('Go')
+            self.verb_as_complement_selection = ttk.Combobox(self.master, values=verbs)
+            self.verb_as_complement_selection.pack(pady=10)
+            self.confirm_button = tk.Button(self.master, text="Select", command=self.confirm_go_second_verb_selection)
         # Display verb selection
         label = tk.Label(self.master, text="Select a verb:")
         label.pack(pady=10)
@@ -200,8 +206,10 @@ class LanguageApp:
         self.tense_label = tk.Label(self.master, text="Select tense:")
         self.tense_selection = ttk.Combobox(self.master, values=tenses)
 
-        # Confirm selection button
-        self.confirm_button = tk.Button(self.master, text="Select", command=self.confirm_verb_selection)
+        if self.mood_selection.get() == "Imperative":
+            if self.verb_selection.get().lower() in ["go", "be"]:
+                self.confirm_button = tk.Button(self.master, text="Select", command=self.go_or_be_confirm_verb_selection())
+            self.confirm_button = tk.Button(self.master, text="Select", command=self.confirm_verb_selection)
 
     def mood_selected(self, event):
         selected_mood = self.mood_selection.get()
@@ -235,25 +243,59 @@ class LanguageApp:
         print("Selected verb:", self.user_selection['verb'])
         self.ask_for_complement()
 
+    def confirm_go_second_verb_selection(self):
+        selected_complement_verb = self.verb_as_complement_selection.get()
+        self.user_selection['complement'] = {
+            'verb': selected_complement_verb,
+        }
+        print("Selected complement verb:", self.user_selection['complement']['verb'])
+        self.ask_for_complement(go=True)
 
-    def ask_for_complement(self):
+
+    def go_or_be_confirm_verb_selection(self):
+        selected_verb = self.verb_selection.get()
+        selected_mood = self.mood_selection.get()
+        self.user_selection['verb'] = {
+            'verb': selected_verb,
+            'mood': selected_mood.lower()
+        }
+
+        print("Selected verb:", self.user_selection['verb'])
+        self.ask_for_complement()
+
+
+    def ask_for_complement(self, go=False):
         self.clear_window()
+
+        verb = self.user_selection.get('verb', {}).get('verb', '').lower()
+        mood = self.user_selection.get('verb', {}).get('mood', '').lower()
+        func = self.add_complement
+
+        if mood == 'imperative' and verb =='go' and go==False:
+            func = self.go_complement
+        elif mood == 'imperative' and verb =='be':
+            func= self.be_complement
 
         label = tk.Label(self.master, text="Do you want to add a complement?")
         label.pack(pady=10)
 
-
-        yes_button = tk.Button(self.master, text="Yes", command=self.add_complement)
+        yes_button = tk.Button(self.master, text="Yes", command=func)
         yes_button.pack(side=tk.LEFT, padx=10)
 
         no_button = tk.Button(self.master, text="No", command=self.final_sentence)
         no_button.pack(side=tk.RIGHT, padx=10)
+
+
 
     def add_complement(self):
 
         self.is_complement = True
         self.clear_window()
         self.display_noun_selection()
+
+    def go_complement(self):
+        self.clear_window()
+        self.display_verb_selection(True)
 
 
 
