@@ -6,6 +6,7 @@ from textblob import Word
 
 # Przykładowe dane - on wymaga po 50 rzecz przym i czasownikow 
 pronouns = ["I", "you", "he", "she", "it", "we", "they"]
+possesive = ["my", "your", "his", "her", "its", "our", "their"]
 nouns = ["water", "food", "mother", "father", "house", "car", "dog", "cat", "money", "area", "family", "word", "brother", "sister", "bed", "kitchen", "restaurant", "bird", "tree", "flower", "animal", "mobile phone", "sun", "moon", "sea", "river", "weather", "eyes", "ears", "hair", "shoes", "bag", "train", "bus", "knife", "fork", "spoon", "breakfast", "dinner", "bread", "fruit", "vegetables", "meat", "drink", "town", "village", "toilet", "weekend", "doctor", "policeman"]
 adjectives = ["good", "big", "small", "bad", "red", "blue", "happy", "beautiful", "open", "green", "closed", "new", "old", "clean", "strong", "young", "expensive", "early", "fast", "dark", "delicious", "soft", "dirty", "empty", "far", "sad", "free", "full", "funny", "hard", "heavy", "hungry", "interesting", "kind", "late", "yellow", "light", "quiet", "ready", "slow", "smart", "tall", "thirsty", "ugly", "weak", "bright", "short", "serious", "stupid", "honest"]
 verbs = ["Be", "Have", "Do", "Say", "Go", "Get", "Make", "Know", "Think", "Take", "See", "Come", "Want", "Look", "Use", "Find", "Give", "Tell", "Work", "Call", "Try", "Ask", "Need", "Feel", "Become", "Leave", "Put", "Mean", "Keep", "Let", "Begin", "Seem", "Help", "Talk", "Turn", "Start", "Show", "Hear", "Play", "Run", "Move", "Like", "Live", "Believe", "Hold", "Bring", "Happen", "Write", "Provide", "Sit"]
@@ -75,6 +76,14 @@ class LanguageApp:
         self.adjective_check.var = tk.BooleanVar()
         self.adjective_check["variable"] = self.adjective_check.var
         self.adjective_check.pack(pady=10)
+
+        #Opcja dodania zaimka possessive
+        self.possesive_check = tk.Checkbutton(self.master, text="Add an possesive", command=self.toggle_possesive)
+        self.possesive_check .var = tk.BooleanVar()
+        self.possesive_check ["variable"] = self.possesive_check.var
+        self.possesive_check .pack(pady=10)
+
+
         self.select_button = tk.Button(self.master, text="Select", command=lambda: self.confirm_noun(arg))
         self.select_button.pack(pady=10)
 
@@ -92,10 +101,29 @@ class LanguageApp:
             self.adjective_selection.pack(pady=10)
             self.select_button.pack_forget()
             self.select_button.pack(pady=(10, 20))
-
         else:
             if hasattr(self, 'adjective_selection'):
                 self.adjective_selection.destroy()
+
+            self.select_button.pack_forget()
+            self.select_button.pack(pady=10)
+
+    def toggle_possesive(self):
+
+        if hasattr(self, 'possesive_selection'):
+            self.possesive_selection.destroy()
+
+        if self.possesive_check.var.get():
+            label = tk.Label(self.master, text="Select a possesive:")
+            label.pack(pady=10)
+
+            self.possesive_selection = ttk.Combobox(self.master, values=possesive)
+            self.possesive_selection.pack(pady=10)
+            self.select_button.pack_forget()
+            self.select_button.pack(pady=(10, 20))
+        else:
+            if hasattr(self, 'possesive_selection'):
+                self.possesive_selection.destroy()
 
             self.select_button.pack_forget()
             self.select_button.pack(pady=10)
@@ -125,17 +153,29 @@ class LanguageApp:
 
             self.user_selection['complement']['subject'] = selected_noun
 
-        if hasattr(self, 'adjective_selection'):
-            selected_adjective = self.adjective_selection.get()
-            if selected_adjective:
-                if not self.is_complement:
-                    self.user_selection['subject'] = f"{selected_adjective} {selected_noun}"
-                if arg:
-                    self.user_selection['complement']['subject'] = f"{selected_adjective} {selected_noun}"
-                else:
-                    self.user_selection['complement'] = f"{selected_adjective} {selected_noun}"
+        selected_adjective = self.adjective_selection.get() if hasattr(self,
+                                                                       'adjective_selection') and self.adjective_check.var.get() else ""
+        selected_possesive = self.possesive_selection.get() if hasattr(self,
+                                                                       'possesive_selection') and self.possesive_check.var.get() else ""
 
-        print("Selected subject/complement:", self.user_selection['subject'] if not self.is_complement else self.user_selection['complement'])
+        # Tworzenie finalnej frazy z przymiotnikiem i zaimkiem, jeśli są wybrane
+        if selected_adjective or selected_possesive:
+            subject_with_modifiers = f"{selected_possesive} {selected_adjective} {selected_noun}".strip()
+            if not self.is_complement:
+                self.user_selection['subject'] = subject_with_modifiers
+            else:
+                if arg:
+                    self.user_selection['complement']['subject'] = subject_with_modifiers
+                else:
+                    self.user_selection['complement']['subject'] = selected_noun
+        else:
+            if not self.is_complement:
+                self.user_selection['subject'] = selected_noun
+            else:
+                self.user_selection['complement']['subject'] = selected_noun
+
+        print("Selected subject/complement:",
+              self.user_selection['subject'] if not self.is_complement else self.user_selection['complement'])
 
         # Jeśli to pierwszy wybór rzeczownika, przechodzimy do czasownika
         if not self.is_complement:
