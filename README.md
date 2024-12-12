@@ -51,7 +51,7 @@ pip install mlconjug3 textblob
 Run the application by executing the following command:
 
 ```bash
-python app.py
+python handling.py
 ```
 
 The graphical user interface (GUI) will launch, allowing you to interact with the application.
